@@ -1,0 +1,146 @@
+<nav class="topbar">
+  <div class="brand">
+    <h1 class="t-heading">MUSHA</h1>
+    <span class="t-label">XWA - MODULE</span>
+  </div>
+  <div class="topbar-actions">
+    <span class="t-label status-label" [class.text-success]="backendOnline" [class.text-accent]="!backendOnline">
+      [{{ backendOnline ? 'BACKEND ONLINE' : 'BACKEND OFFLINE' }}]
+    </span>
+    <button type="button" class="theme-toggle-btn" (click)="toggleTheme()">
+      <span>{{ themeLabel() }}</span>
+    </button>
+  </div>
+</nav>
+
+<main class="container dot-grid-subtle">
+  <header class="section-header">
+    <div>
+      <h1 class="t-heading">CONTENT ANALYSIS</h1>
+      <span class="t-label">THIRD-PARTY RESOURCE INVENTORY / DOM ANALYSIS</span>
+    </div>
+  </header>
+
+  <section class="panel">
+    <label class="t-label" for="target-input">TARGET</label>
+    <form class="discover" (ngSubmit)="analyze()">
+      <input
+        type="text"
+        id="target-input"
+        name="target"
+        class="input-field"
+        [(ngModel)]="target"
+        placeholder="https://example.com"
+        autocomplete="off"
+      />
+      <button type="submit" class="btn-primary" [disabled]="loading || !target.trim()">
+        {{ loading ? 'ANALYZING...' : 'ANALYZE' }}
+      </button>
+    </form>
+
+    @if (loading) {
+      <div class="t-label text-warning">[ LOADING... ]</div>
+    }
+    @if (error) {
+      <div class="t-label text-accent">[ERROR: {{ error }}]</div>
+    }
+  </section>
+
+  @if (analysis) {
+    <section class="results">
+      <header class="section-header results-header">
+        <div class="results-heading">
+          <div>
+            <h1 class="t-heading">ANALYSIS #{{ analysis.id }}</h1>
+            <span class="t-label">
+              {{ analysis.resources.length }} RESOURCE(S) — {{ analysis.page_title || '(NO TITLE)' }}
+            </span>
+          </div>
+          <button type="button" class="export-btn" (click)="exportJson()">
+            <span>EXPORT JSON</span>
+          </button>
+        </div>
+      </header>
+
+      <h2 class="t-label section-title">SCRIPTS ({{ resourcesOf('script').length }})</h2>
+      <section class="panel">
+        @if (resourcesOf('script').length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th class="t-label">PROVIDER</th>
+                <th class="t-label">URL</th>
+                <th class="t-label">ASYNC</th>
+                <th class="t-label">DEFER</th>
+                <th class="t-label">INTEGRITY</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (resource of resourcesOf('script'); track resource.id) {
+                <tr>
+                  <td class="t-data" [class.text-interactive]="resource.provider">{{ resource.provider || '—' }}</td>
+                  <td class="t-data resource-url">{{ resource.url }}</td>
+                  <td class="t-data">{{ resource.async_attr ? 'YES' : '—' }}</td>
+                  <td class="t-data">{{ resource.defer_attr ? 'YES' : '—' }}</td>
+                  <td class="t-data" [class.text-success]="resource.integrity">{{ resource.integrity ? 'SRI' : '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="empty-state t-label">[ NO SCRIPTS ]</div>
+        }
+      </section>
+
+      <h2 class="t-label section-title">STYLESHEETS ({{ resourcesOf('stylesheet').length }})</h2>
+      <section class="panel">
+        @if (resourcesOf('stylesheet').length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th class="t-label">PROVIDER</th>
+                <th class="t-label">URL</th>
+                <th class="t-label">INTEGRITY</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (resource of resourcesOf('stylesheet'); track resource.id) {
+                <tr>
+                  <td class="t-data" [class.text-interactive]="resource.provider">{{ resource.provider || '—' }}</td>
+                  <td class="t-data resource-url">{{ resource.url }}</td>
+                  <td class="t-data" [class.text-success]="resource.integrity">{{ resource.integrity ? 'SRI' : '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="empty-state t-label">[ NO STYLESHEETS ]</div>
+        }
+      </section>
+
+      <h2 class="t-label section-title">IFRAMES ({{ resourcesOf('iframe').length }})</h2>
+      <section class="panel">
+        @if (resourcesOf('iframe').length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th class="t-label">PROVIDER</th>
+                <th class="t-label">URL</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (resource of resourcesOf('iframe'); track resource.id) {
+                <tr>
+                  <td class="t-data" [class.text-interactive]="resource.provider">{{ resource.provider || '—' }}</td>
+                  <td class="t-data resource-url">{{ resource.url }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="empty-state t-label">[ NO IFRAMES ]</div>
+        }
+      </section>
+    </section>
+  }
+</main>
