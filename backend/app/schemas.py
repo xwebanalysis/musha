@@ -34,6 +34,22 @@ class ContentAnalysisRead(BaseModel):
     resources: List[ResourceRead] = []
 
 
+class ContentAnalysisListItem(BaseModel):
+    """Summary row for the analysis history (GET /api/analyses)."""
+
+    id: int
+    target: str
+    status: str
+    analysis_type: str
+    created_at: datetime
+    page_title: Optional[str] = None
+    resource_count: int
+    script_count: int
+    iframe_count: int
+    stylesheet_count: int
+    preconnect_count: int
+
+
 class DiscoverRequest(BaseModel):
     target: str
 
@@ -44,3 +60,4 @@ class DiscoverResponse(BaseModel):
     script_count: int
     iframe_count: int
     stylesheet_count: int
+    preconnect_count: int

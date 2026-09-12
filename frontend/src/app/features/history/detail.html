@@ -1,0 +1,101 @@
+@if (loading) {
+  <div class="t-label text-warning">[ LOADING... ]</div>
+}
+@if (error) {
+  <div class="t-label text-accent">[ERROR: {{ error }}]</div>
+}
+
+@if (analysis) {
+  <section class="detail route-container">
+    <header class="detail-hero">
+      <div class="hero-main">
+        @if (routeView) {
+          <a class="t-label back-link" routerLink="/history">[ &lt; {{ t('action.back') }} ]</a>
+        }
+        <span class="t-label">#{{ analysis.id }} / {{ analysis.target }}</span>
+        <div class="hero-number t-display-xl">{{ analysis.resources.length }}</div>
+        <span class="t-label">
+          {{ t('metric.resources') }} — {{ analysis.page_title || '(NO TITLE)' }}
+        </span>
+      </div>
+      <div class="hero-side">
+        <app-status-badge [status]="analysis.status" />
+        @if (analysis.status === 'COMPLETED') {
+          <app-export-actions [analysis]="analysis" />
+        }
+      </div>
+    </header>
+
+    <div class="metric-grid">
+      <app-metric-card
+        [label]="t('metric.scripts')"
+        [value]="counts().scripts"
+        [status]="counts().scripts ? 'info' : 'pass'"
+      />
+      <app-metric-card
+        [label]="t('metric.stylesheets')"
+        [value]="counts().stylesheets"
+        [status]="counts().stylesheets ? 'info' : 'pass'"
+      />
+      <app-metric-card
+        [label]="t('metric.iframes')"
+        [value]="counts().iframes"
+        [status]="counts().iframes ? 'medium' : 'pass'"
+      />
+      <app-metric-card
+        [label]="t('detail.preconnects')"
+        [value]="counts().preconnects"
+        [status]="counts().preconnects ? 'low' : 'pass'"
+      />
+    </div>
+
+    <h2 class="t-label section-title">{{ t('detail.scripts') }} ({{ resourcesOf('script').length }})</h2>
+    <section class="panel">
+      <app-detail-table
+        [columns]="scriptColumns"
+        [rows]="resourcesOf('script')"
+        emptyText="[ NO SCRIPTS ]"
+      />
+    </section>
+
+    <h2 class="t-label section-title">
+      {{ t('detail.stylesheets') }} ({{ resourcesOf('stylesheet').length }})
+    </h2>
+    <section class="panel">
+      <app-detail-table
+        [columns]="styleColumns"
+        [rows]="resourcesOf('stylesheet')"
+        emptyText="[ NO STYLESHEETS ]"
+      />
+    </section>
+
+    <h2 class="t-label section-title">{{ t('detail.iframes') }} ({{ resourcesOf('iframe').length }})</h2>
+    <section class="panel">
+      <app-detail-table
+        [columns]="iframeColumns"
+        [rows]="resourcesOf('iframe')"
+        emptyText="[ NO IFRAMES ]"
+      />
+    </section>
+
+    <h2 class="t-label section-title">
+      {{ t('detail.preconnects') }} ({{ resourcesOf('preconnect').length }})
+    </h2>
+    <section class="panel">
+      <app-detail-table
+        [columns]="preconnectColumns"
+        [rows]="resourcesOf('preconnect')"
+        emptyText="[ NO PRECONNECTS ]"
+      />
+    </section>
+
+    @if (otherResources().length > 0) {
+      <h2 class="t-label section-title">
+        {{ t('detail.other') }} ({{ otherResources().length }})
+      </h2>
+      <section class="panel">
+        <app-detail-table [columns]="otherColumns" [rows]="otherResources()" />
+      </section>
+    }
+  </section>
+}
