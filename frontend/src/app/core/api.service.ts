@@ -55,6 +55,88 @@ export interface InventoryResponse {
   preconnect_count: number;
 }
 
+/** Structural diff between two analyses (GET /api/analyses/{id}/diff). */
+export interface ResourceDiffEntry {
+  resource_type: string | null;
+  url: string | null;
+  host: string | null;
+  integrity: string | null;
+  crossorigin: string | null;
+  async_attr: boolean;
+  defer_attr: boolean;
+  provider: string | null;
+  category: string | null;
+}
+
+export interface ModifiedResourceDiff {
+  resource_type: string;
+  url: string;
+  changes: string[];
+  provider_changed: boolean;
+  provider_base: string | null;
+  provider_other: string | null;
+  base: ResourceDiffEntry;
+  other: ResourceDiffEntry;
+}
+
+export interface DiffSummary {
+  base_total: number;
+  other_total: number;
+  added_count: number;
+  removed_count: number;
+  modified_count: number;
+  unchanged_count: number;
+  provider_changes_count: number;
+  similarity_score: number;
+}
+
+export interface DiffAnalysisRef {
+  id: number;
+  target: string;
+  created_at: string;
+}
+
+export interface DiffResponse {
+  base: DiffAnalysisRef;
+  against: DiffAnalysisRef;
+  summary: DiffSummary;
+  added: ResourceDiffEntry[];
+  removed: ResourceDiffEntry[];
+  modified: ModifiedResourceDiff[];
+  provider_changes: ModifiedResourceDiff[];
+}
+
+/** Content drift over consecutive analyses of a domain. */
+export interface DriftStep {
+  from_analysis_id: number;
+  to_analysis_id: number;
+  from_created_at: string;
+  to_created_at: string;
+  resource_delta: number;
+  resource_delta_pct: number | null;
+  providers_added: string[];
+  providers_removed: string[];
+  severity: 'low' | 'medium' | 'high';
+  alert: string;
+}
+
+export interface DriftSummary {
+  analysis_count: number;
+  severity: 'low' | 'medium' | 'high';
+  total_resource_delta: number;
+  providers_added: string[];
+  providers_removed: string[];
+  alert: string;
+}
+
+export interface DriftResponse {
+  domain: string;
+  first_created_at: string | null;
+  last_created_at: string | null;
+  summary: DriftSummary;
+  steps: DriftStep[];
+}
+
 export interface HealthResponse {
   status: string;
   database: string;
@@ -146,6 +228,20 @@ export class ApiService {
   /** Server-side export URL (Content-Disposition attachment). */
   exportUrl(id: number, format: ExportFormat = 'json'): string {
     return `${this.apiUrl}/api/analyses/${id}/export?format=${format}`;
+  }
+
+  /** Structural diff between two analyses. */
+  diff(id: number | string, againstId: number | string): Observable<DiffResponse> {
+    return this.http.get<DiffResponse>(
+      `${this.apiUrl}/api/analyses/${id}/diff?against=${againstId}`,
+    );
+  }
+
+  /** Content drift over consecutive analyses of a domain. */
+  drift(domain: string): Observable<DriftResponse> {
+    return this.http.get<DriftResponse>(
+      `${this.apiUrl}/api/targets/${encodeURIComponent(domain)}/drift`,
+    );
   }
 
   /** Live WebSocket endpoint (target URL-encoded). */

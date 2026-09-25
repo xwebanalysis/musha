@@ -16,21 +16,21 @@ This file is formatted to be synced automatically with GitHub Issues using the `
 - [x] Extract scripts, iframes, and external resource URLs
 - [x] Fingerprint third-party providers and trackers
 - [ ] Detect data-leakage channels (postMessage, beacons) — not implemented; the current analyzer is a passive HTML inventory (see docs/architecture.md)
-- [ ] Build vendor classification database
+- [x] Build vendor classification database (`app/data/vendors.json`, scored classifier in `app/vendor_db.py`; 47 legacy rules migrated)
 
 ## Structural Diffing <!-- phase:structural-diff -->
 
-- [ ] Build DOM tree normalization pipeline
-- [ ] Implement tree-based structural diff algorithm
-- [ ] Classify changes (added, removed, modified, moved)
-- [ ] Ignore volatile nodes (timestamps, session tokens, nonces)
+- [x] Build normalization pipeline for the resource inventory (volatile query-string noise tokens ignored)
+- [x] Implement structural diff algorithm (`GET /api/analyses/{id}/diff?against={other_id}`; resource-inventory diff, DOM tree-level diff deferred)
+- [x] Classify changes (added, removed, modified; "moved" is not applicable to a URL-keyed inventory — moved hosts appear as added/removed)
+- [x] Ignore volatile nodes (timestamps, session tokens, nonces, cache-busters)
 
 ## Content Drift Detection <!-- phase:content-drift -->
 
-- [ ] Capture and store page snapshots over time
-- [ ] Implement semantic text drift analysis
-- [ ] Detect price, availability, and layout changes
-- [ ] Generate drift alerts with severity scoring
+- [x] Capture and store page snapshots over time (resource snapshots persist per analysis)
+- [ ] Implement semantic text drift analysis — deferred; passive HTML-inventory model (see docs/architecture.md)
+- [x] Detect resource-count and provider drift (`GET /api/targets/{domain}/drift`; price/availability/layout drift deferred — passive model)
+- [x] Generate drift alerts with severity scoring (low/medium/high)
 
 ## Reporting & Production Hardening <!-- phase:production-hardening -->
 

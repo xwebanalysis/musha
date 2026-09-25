@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
 import httpx
 from bs4 import BeautifulSoup
+
+from . import vendor_db
 
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -16,58 +18,6 @@ DEFAULT_USER_AGENT = (
 
 class TargetError(Exception):
     """Raised when the target cannot be fetched or parsed."""
-
-
-PROVIDER_RULES: tuple[tuple[str, str, str], ...] = (
-    # (domain fragment, provider, category)
-    ("googletagmanager.com", "Google Tag Manager", "tag-manager"),
-    ("google-analytics.com", "Google Analytics", "analytics"),
-    ("analytics.google.com", "Google Analytics", "analytics"),
-    ("googleapis.com/css", "Google Fonts", "fonts"),
-    ("fonts.googleapis.com", "Google Fonts", "fonts"),
-    ("recaptcha", "Google reCAPTCHA", "captcha"),
-    ("googleadservices.com", "Google Ads", "ads"),
-    ("googlesyndication.com", "Google AdSense", "ads"),
-    ("doubleclick.net", "Google Ad Manager", "ads"),
-    ("cloudflare.com", "Cloudflare", "cdn"),
-    ("cloudflareinsights.com", "Cloudflare Web Analytics", "analytics"),
-    ("jsdelivr.net", "jsDelivr", "cdn"),
-    ("unpkg.com", "unpkg", "cdn"),
-    ("cdnjs.cloudflare.com", "cdnjs", "cdn"),
-    ("facebook.net", "Facebook SDK", "social"),
-    ("platform.twitter.com", "Twitter/X", "social"),
-    ("hotjar.com", "Hotjar", "analytics"),
-    ("newrelic.com", "New Relic", "monitoring"),
-    ("sentry.io", "Sentry", "monitoring"),
-    ("segment.io", "Segment", "analytics"),
-    ("mixpanel.com", "Mixpanel", "analytics"),
-    ("amplitude.com", "Amplitude", "analytics"),
-    ("fullstory.com", "FullStory", "analytics"),
-    ("optimizely.com", "Optimizely", "testing"),
-    ("matomo", "Matomo", "analytics"),
-    ("plausible.io", "Plausible", "analytics"),
-    ("umami.is", "Umami", "analytics"),
-    ("intercom.io", "Intercom", "support"),
-    ("crisp.chat", "Crisp", "support"),
-    ("zendesk.com", "Zendesk", "support"),
-    ("wordpress.org", "WordPress", "cms"),
-    ("wp.com", "WordPress.com", "cms"),
-    ("shopify.com", "Shopify", "ecommerce"),
-    ("squarespace.com", "Squarespace", "ecommerce"),
-    ("wix.com", "Wix", "ecommerce"),
-    ("amazonaws.com", "AWS", "cloud"),
-    ("azureedge.net", "Microsoft Azure", "cloud"),
-    ("akamai", "Akamai", "cdn"),
-    ("fastly.net", "Fastly", "cdn"),
-    ("stackpathcdn.com", "StackPath", "cdn"),
-    ("yandex.ru", "Yandex", "search"),
-    ("baidu.com", "Baidu", "search"),
-    ("bing.com", "Bing", "search"),
-    ("pubmatic.com", "PubMatic", "ads"),
-    ("criteo.com", "Criteo", "ads"),
-    ("taboola.com", "Taboola", "ads"),
-    ("outbrain.com", "Outbrain", "ads"),
-)
 
 
 @dataclass
@@ -84,12 +34,12 @@ class ResourceData:
 
 
 def fingerprint(url: str) -> tuple[str | None, str | None]:
-    """Identify the provider and category of an external resource URL."""
-    lower = url.lower()
-    for fragment, provider, category in PROVIDER_RULES:
-        if fragment in lower:
-            return provider, category
-    return None, None
+    """Identify the provider and category of an external resource URL.
+
+    Delegates to the vendor classification database
+    (``app/data/vendors.json``) loaded through ``app.vendor_db``.
+    """
+    return vendor_db.fingerprint(url)
 
 
 def _absolute(base_url: str, ref: str) -> str:

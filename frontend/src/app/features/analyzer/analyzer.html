@@ -55,5 +55,8 @@
 }
 
 @if (analysis) {
+  @if (lastLoaded && terminalLines.length === 0) {
+    <div class="t-label text-muted last-loaded">[ {{ t('dashboard.last_analysis') }} #{{ analysis.id }} ]</div>
+  }
   <app-analysis-detail [analysis]="analysis" />
 }

@@ -25,6 +25,7 @@ describe('AnalyzerComponent', () => {
   const apiStub = {
     inventory: vi.fn(),
     getAnalysis: vi.fn(),
+    listAnalyses: vi.fn(() => of([])),
     liveUrl: vi.fn((target: string) => `ws://test/api/content/live?target=${target}`),
   };
   const liveStub = { connect: vi.fn() };
@@ -33,6 +34,7 @@ describe('AnalyzerComponent', () => {
     localStorage.clear();
     apiStub.inventory.mockReset();
     apiStub.getAnalysis.mockReset();
+    apiStub.listAnalyses.mockReturnValue(of([]));
     liveStub.connect.mockReset();
 
     await TestBed.configureTestingModule({

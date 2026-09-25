@@ -154,7 +154,7 @@ def test_rate_limit_envelope(client, monkeypatch):
 def test_optional_jwt_auth(client, monkeypatch):
     from app import security
 
-    monkeypatch.setattr(security, "JWT_SECRET", "test-secret")
+    monkeypatch.setattr(security, "JWT_SECRET", "test-secret-with-at-least-32-bytes-length")
     monkeypatch.setattr(security, "AUTH_REQUIRED", True)
     monkeypatch.setattr(security, "AUTH_PASSWORD", "s3cret")
 

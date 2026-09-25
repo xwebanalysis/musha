@@ -49,6 +49,119 @@
       />
     </div>
 
+    <section class="panel charts-panel">
+      <div class="charts-grid">
+        <div class="chart-block">
+          <h2 class="t-label">{{ t('charts.resources_by_type') }}</h2>
+          <app-xwa-chart
+            kind="donut"
+            [data]="resourceTypeDonut()"
+            unit="RES"
+            title="Resources by type"
+          />
+        </div>
+        <div class="chart-block">
+          <h2 class="t-label">{{ t('charts.providers_by_category') }}</h2>
+          <app-xwa-chart
+            kind="h-bars"
+            [data]="providersByCategory()"
+            title="Providers by category"
+          />
+        </div>
+        <div class="chart-block">
+          <h2 class="t-label">{{ t('charts.attribute_flags') }}</h2>
+          <app-xwa-chart
+            kind="bars"
+            [data]="attributeFlagBars()"
+            title="Resource attribute flags"
+          />
+        </div>
+      </div>
+    </section>
+
+    <h2 class="t-label section-title">{{ t('detail.diff') }}</h2>
+    <section class="panel">
+      @if (diffableAnalyses().length > 0) {
+        <div class="diff-controls">
+          <label class="t-label" for="diff-select">{{ t('detail.diff_against') }}</label>
+          <select id="diff-select" class="input-field" [(ngModel)]="diffAgainstId">
+            @for (item of diffableAnalyses(); track item.id) {
+              <option [ngValue]="item.id">
+                #{{ item.id }} / {{ item.target }} / {{ item.created_at | slice: 0 : 10 }}
+              </option>
+            }
+          </select>
+          <button type="button" class="btn-primary" (click)="runDiff()" [disabled]="!canRunDiff()">
+            {{ diffLoading ? t('detail.diff_running') : t('detail.diff_run') }}
+          </button>
+        </div>
+        @if (diffAgainstId === null) {
+          <div class="t-label text-muted diff-hint">[ {{ t('detail.diff_select_hint') }} ]</div>
+        }
+      } @else {
+        <div class="t-label">{{ t('detail.diff_none') }}</div>
+      }
+      @if (diffError) {
+        <div class="t-label text-accent">[ERROR: {{ diffError }}]</div>
+      }
+      @if (diffResult) {
+        <div class="diff-summary">
+          <span class="t-label">{{ t('detail.diff_summary') }}</span>
+          <span class="t-display-md">{{ diffResult.summary.similarity_score }}</span>
+          <span class="t-label">
+            +{{ diffResult.summary.added_count }} / -{{ diffResult.summary.removed_count }} /
+            ~{{ diffResult.summary.modified_count }} / ={{ diffResult.summary.unchanged_count }}
+          </span>
+        </div>
+        @if (diffResult.added.length > 0) {
+          <h3 class="t-label diff-heading">{{ t('detail.diff_added') }} ({{ diffResult.added.length }})</h3>
+          <app-detail-table [columns]="diffEntryColumns" [rows]="diffResult.added" />
+        }
+        @if (diffResult.removed.length > 0) {
+          <h3 class="t-label diff-heading">{{ t('detail.diff_removed') }} ({{ diffResult.removed.length }})</h3>
+          <app-detail-table [columns]="diffEntryColumns" [rows]="diffResult.removed" />
+        }
+        @if (diffModifiedRows().length > 0) {
+          <h3 class="t-label diff-heading">{{ t('detail.diff_modified') }} ({{ diffModifiedRows().length }})</h3>
+          <app-detail-table [columns]="diffModifiedColumns" [rows]="diffModifiedRows()" />
+        }
+        @if (providerChangeRows().length > 0) {
+          <h3 class="t-label diff-heading">{{ t('detail.diff_providers') }} ({{ providerChangeRows().length }})</h3>
+          <app-detail-table [columns]="diffModifiedColumns" [rows]="providerChangeRows()" />
+        }
+      }
+    </section>
+
+    <h2 class="t-label section-title">{{ t('detail.drift') }}</h2>
+    <section class="panel">
+      <div class="diff-controls">
+        <span class="t-label">{{ t('detail.drift_domain') }}: <span class="t-data text-interactive">{{ domainOf() }}</span></span>
+        <button type="button" class="btn-primary" (click)="runDrift()" [disabled]="!canRunDrift()">
+          {{ driftLoading ? t('detail.drift_running') : t('detail.drift_load') }}
+        </button>
+      </div>
+      @if (driftError) {
+        <div class="t-label text-accent">[ERROR: {{ driftError }}]</div>
+      }
+      @if (driftResult) {
+        <div class="diff-summary">
+          <span class="t-label">{{ t('detail.drift_severity') }}</span>
+          <span class="t-display-md" [class]="severityClass(driftResult.summary.severity)">
+            {{ driftResult.summary.severity.toUpperCase() }}
+          </span>
+          <span class="t-data">
+            {{ driftResult.summary.analysis_count }} {{ t('detail.drift_analyses') }} /
+            Δ {{ driftResult.summary.total_resource_delta }}
+          </span>
+        </div>
+        <div class="t-data drift-alert">[ {{ driftResult.summary.alert }} ]</div>
+        @if (driftSteps().length > 0) {
+          <h3 class="t-label diff-heading">{{ t('detail.drift_steps') }} ({{ driftSteps().length }})</h3>
+          <app-detail-table [columns]="driftColumns" [rows]="driftSteps()" />
+        }
+      }
+    </section>
+
     <h2 class="t-label section-title">{{ t('detail.scripts') }} ({{ resourcesOf('script').length }})</h2>
     <section class="panel">
       <app-detail-table
