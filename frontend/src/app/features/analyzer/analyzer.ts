@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
@@ -29,7 +29,7 @@ const PHASES: readonly PhaseName[] = ['connect', 'fetch', 'inventory', 'complete
   templateUrl: './analyzer.html',
   styleUrl: './analyzer.scss',
 })
-export class AnalyzerComponent implements OnDestroy {
+export class AnalyzerComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);
   private readonly live = inject(LiveService);
   private readonly i18n = inject(I18nService);
@@ -44,11 +44,41 @@ export class AnalyzerComponent implements OnDestroy {
   protected terminalLines: string[] = [];
   protected phaseState: Record<PhaseName, PhaseState> = this.emptyPhases();
   protected analysis: ContentAnalysis | null = null;
+  protected lastLoaded = false;
 
   private subscription: Subscription | null = null;
 
+  ngOnInit(): void {
+    this.loadLatest();
+  }
+
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+  }
+
+  /** Dashboard bootstrap: show the latest completed analysis (if any). */
+  private loadLatest(): void {
+    this.api.listAnalyses().subscribe({
+      next: (items) => {
+        const latest = items.find((item) => item.status === 'COMPLETED');
+        if (!latest) {
+          return;
+        }
+        this.api.getAnalysis(latest.id).subscribe({
+          next: (analysis) => {
+            this.analysis = analysis;
+            this.lastLoaded = true;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            /* non-fatal: the dashboard just stays empty */
+          },
+        });
+      },
+      error: () => {
+        /* non-fatal */
+      },
+    });
   }
 
   protected t(key: string): string {

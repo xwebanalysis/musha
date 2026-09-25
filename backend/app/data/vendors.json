@@ -1,0 +1,232 @@
+{
+  "$schema": "https://xwa.internal/schemas/musha-vendors-v1.json",
+  "version": 1,
+  "description": "Musha third-party vendor classification database. Fragments are matched case-insensitively against resource URLs; host-level matches score higher than path/URL matches. The best-scoring vendor wins; ties resolve to the first entry in list order. Migrated from the legacy PROVIDER_RULES tuple in app/analyzer.py (47 fragment rules).",
+  "vendors": [
+    {
+      "provider": "Google Tag Manager",
+      "category": "tag-manager",
+      "fragments": ["googletagmanager.com"]
+    },
+    {
+      "provider": "Google Analytics",
+      "category": "analytics",
+      "fragments": ["google-analytics.com", "analytics.google.com"]
+    },
+    {
+      "provider": "Google Fonts",
+      "category": "fonts",
+      "fragments": ["fonts.googleapis.com", "googleapis.com/css"]
+    },
+    {
+      "provider": "Google reCAPTCHA",
+      "category": "captcha",
+      "fragments": ["recaptcha"]
+    },
+    {
+      "provider": "Google Ads",
+      "category": "ads",
+      "fragments": ["googleadservices.com"]
+    },
+    {
+      "provider": "Google AdSense",
+      "category": "ads",
+      "fragments": ["googlesyndication.com"]
+    },
+    {
+      "provider": "Google Ad Manager",
+      "category": "ads",
+      "fragments": ["doubleclick.net"]
+    },
+    {
+      "provider": "Cloudflare",
+      "category": "cdn",
+      "fragments": ["cloudflare.com"]
+    },
+    {
+      "provider": "Cloudflare Web Analytics",
+      "category": "analytics",
+      "fragments": ["cloudflareinsights.com"]
+    },
+    {
+      "provider": "jsDelivr",
+      "category": "cdn",
+      "fragments": ["jsdelivr.net"]
+    },
+    {
+      "provider": "unpkg",
+      "category": "cdn",
+      "fragments": ["unpkg.com"]
+    },
+    {
+      "provider": "cdnjs",
+      "category": "cdn",
+      "fragments": ["cdnjs.cloudflare.com"]
+    },
+    {
+      "provider": "Facebook SDK",
+      "category": "social",
+      "fragments": ["facebook.net"]
+    },
+    {
+      "provider": "Twitter/X",
+      "category": "social",
+      "fragments": ["platform.twitter.com"]
+    },
+    {
+      "provider": "Hotjar",
+      "category": "analytics",
+      "fragments": ["hotjar.com"]
+    },
+    {
+      "provider": "New Relic",
+      "category": "monitoring",
+      "fragments": ["newrelic.com"]
+    },
+    {
+      "provider": "Sentry",
+      "category": "monitoring",
+      "fragments": ["sentry.io"]
+    },
+    {
+      "provider": "Segment",
+      "category": "analytics",
+      "fragments": ["segment.io"]
+    },
+    {
+      "provider": "Mixpanel",
+      "category": "analytics",
+      "fragments": ["mixpanel.com"]
+    },
+    {
+      "provider": "Amplitude",
+      "category": "analytics",
+      "fragments": ["amplitude.com"]
+    },
+    {
+      "provider": "FullStory",
+      "category": "analytics",
+      "fragments": ["fullstory.com"]
+    },
+    {
+      "provider": "Optimizely",
+      "category": "testing",
+      "fragments": ["optimizely.com"]
+    },
+    {
+      "provider": "Matomo",
+      "category": "analytics",
+      "fragments": ["matomo"]
+    },
+    {
+      "provider": "Plausible",
+      "category": "analytics",
+      "fragments": ["plausible.io"]
+    },
+    {
+      "provider": "Umami",
+      "category": "analytics",
+      "fragments": ["umami.is"]
+    },
+    {
+      "provider": "Intercom",
+      "category": "support",
+      "fragments": ["intercom.io"]
+    },
+    {
+      "provider": "Crisp",
+      "category": "support",
+      "fragments": ["crisp.chat"]
+    },
+    {
+      "provider": "Zendesk",
+      "category": "support",
+      "fragments": ["zendesk.com"]
+    },
+    {
+      "provider": "WordPress",
+      "category": "cms",
+      "fragments": ["wordpress.org"]
+    },
+    {
+      "provider": "WordPress.com",
+      "category": "cms",
+      "fragments": ["wp.com"]
+    },
+    {
+      "provider": "Shopify",
+      "category": "ecommerce",
+      "fragments": ["shopify.com"]
+    },
+    {
+      "provider": "Squarespace",
+      "category": "ecommerce",
+      "fragments": ["squarespace.com"]
+    },
+    {
+      "provider": "Wix",
+      "category": "ecommerce",
+      "fragments": ["wix.com"]
+    },
+    {
+      "provider": "AWS",
+      "category": "cloud",
+      "fragments": ["amazonaws.com"]
+    },
+    {
+      "provider": "Microsoft Azure",
+      "category": "cloud",
+      "fragments": ["azureedge.net"]
+    },
+    {
+      "provider": "Akamai",
+      "category": "cdn",
+      "fragments": ["akamai"]
+    },
+    {
+      "provider": "Fastly",
+      "category": "cdn",
+      "fragments": ["fastly.net"]
+    },
+    {
+      "provider": "StackPath",
+      "category": "cdn",
+      "fragments": ["stackpathcdn.com"]
+    },
+    {
+      "provider": "Yandex",
+      "category": "search",
+      "fragments": ["yandex.ru"]
+    },
+    {
+      "provider": "Baidu",
+      "category": "search",
+      "fragments": ["baidu.com"]
+    },
+    {
+      "provider": "Bing",
+      "category": "search",
+      "fragments": ["bing.com"]
+    },
+    {
+      "provider": "PubMatic",
+      "category": "ads",
+      "fragments": ["pubmatic.com"]
+    },
+    {
+      "provider": "Criteo",
+      "category": "ads",
+      "fragments": ["criteo.com"]
+    },
+    {
+      "provider": "Taboola",
+      "category": "ads",
+      "fragments": ["taboola.com"]
+    },
+    {
+      "provider": "Outbrain",
+      "category": "ads",
+      "fragments": ["outbrain.com"]
+    }
+  ]
+}

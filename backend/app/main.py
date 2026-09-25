@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Literal
 
+import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -14,7 +15,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from xwa_sdk import Error, Event, to_dict
 
-from . import analyzer, database, models, schemas, security
+from . import analyzer, database, diffing, drift, models, schemas, security, vendor_db
 
 SERVICE_VERSION = "0.2.0"
 TOOL = "musha"
@@ -49,6 +50,8 @@ def _error_payload(code: str, message: str, detail=None, retryable: bool = False
 async def lifespan(app: FastAPI):
     database.wait_for_db()
     models.Base.metadata.create_all(bind=database.engine)
+    # Load (and validate) the vendor classification database at startup.
+    vendor_db.get_db()
     yield
 
 
@@ -350,6 +353,116 @@ def delete_all_analyses(db: Session = Depends(database.get_db)):
     db.query(models.ContentAnalysis).delete()
     db.commit()
     return Response(status_code=204)
+
+
+def _host_of(target: str) -> str | None:
+    """Extract the lowercased host of a stored target (bare or full URL)."""
+    try:
+        candidate = target if "://" in target else f"https://{target}"
+        return (httpx.URL(candidate).host or "").lower() or None
+    except Exception:
+        return None
+
+
+def _normalize_domain(domain: str) -> str:
+    """Lowercase a domain, resolve full URLs to their host, drop 'www.'."""
+    domain = domain.strip().lower()
+    if "://" in domain:
+        domain = _host_of(domain) or domain
+    return domain.removeprefix("www.").rstrip(".")
+
+
+def _modified_diff_entry(entry: diffing.ModifiedResource) -> dict:
+    return {
+        "resource_type": entry.resource_type,
+        "url": entry.url,
+        "changes": entry.changes,
+        "provider_changed": entry.provider_changed,
+        "provider_base": entry.provider_base,
+        "provider_other": entry.provider_other,
+        "base": entry.base,
+        "other": entry.other,
+    }
+
+
+@app.get("/api/analyses/{analysis_id}/diff", response_model=schemas.DiffResponse)
+def diff_analyses(
+    analysis_id: int,
+    against: int = Query(..., description="ID of the analysis to compare against"),
+    db: Session = Depends(database.get_db),
+):
+    """Structural diff of two analyses' normalized resource inventories."""
+    base_analysis = db.get(models.ContentAnalysis, analysis_id)
+    if base_analysis is None:
+        raise HTTPException(status_code=404, detail="Analysis not found.")
+    other_analysis = db.get(models.ContentAnalysis, against)
+    if other_analysis is None:
+        raise HTTPException(status_code=404, detail="Comparison analysis not found.")
+    if analysis_id == against:
+        raise HTTPException(status_code=400, detail="Cannot diff an analysis against itself.")
+
+    result = diffing.diff_resources(
+        [diffing.to_resource_dict(resource) for resource in base_analysis.resources],
+        [diffing.to_resource_dict(resource) for resource in other_analysis.resources],
+    )
+    return schemas.DiffResponse(
+        base=schemas.DiffAnalysisRef(
+            id=base_analysis.id,
+            target=base_analysis.target,
+            created_at=base_analysis.created_at,
+        ),
+        against=schemas.DiffAnalysisRef(
+            id=other_analysis.id,
+            target=other_analysis.target,
+            created_at=other_analysis.created_at,
+        ),
+        summary=schemas.DiffSummary(**result.summary.__dict__),
+        added=result.added,
+        removed=result.removed,
+        modified=[_modified_diff_entry(entry) for entry in result.modified],
+        provider_changes=[
+            _modified_diff_entry(entry) for entry in result.provider_changes
+        ],
+    )
+
+
+@app.get("/api/targets/{domain}/drift", response_model=schemas.DriftResponse)
+def domain_drift(domain: str, db: Session = Depends(database.get_db)):
+    """Content drift over the consecutive completed analyses of one domain."""
+    wanted = _normalize_domain(domain)
+    rows = (
+        db.query(models.ContentAnalysis)
+        .order_by(models.ContentAnalysis.created_at, models.ContentAnalysis.id)
+        .all()
+    )
+    matched = [
+        row
+        for row in rows
+        if row.status == "COMPLETED"
+        and ((_host_of(row.target) or "").removeprefix("www.").rstrip(".") == wanted)
+    ]
+    if not matched:
+        raise HTTPException(
+            status_code=404, detail=f"No completed analyses found for domain '{domain}'."
+        )
+
+    result = drift.analyze_drift(
+        [
+            {
+                "id": row.id,
+                "created_at": row.created_at,
+                "resources": [diffing.to_resource_dict(resource) for resource in row.resources],
+            }
+            for row in matched
+        ]
+    )
+    return schemas.DriftResponse(
+        domain=wanted,
+        first_created_at=result.first_created_at,
+        last_created_at=result.last_created_at,
+        summary=schemas.DriftSummary(**result.summary.__dict__),
+        steps=[schemas.DriftStep(**step.__dict__) for step in result.steps],
+    )
 
 
 @app.websocket("/api/content/live")

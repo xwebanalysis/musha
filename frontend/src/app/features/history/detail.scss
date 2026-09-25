@@ -48,8 +48,74 @@
   margin-bottom: var(--space-lg);
 }
 
+.charts-panel {
+  margin-bottom: var(--space-lg);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.chart-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.diff-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-sm);
+
+  .input-field {
+    flex: 0 1 320px;
+  }
+}
+
+.diff-hint {
+  margin-bottom: var(--space-sm);
+}
+
+.diff-summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  margin: var(--space-md) 0;
+  padding: var(--space-sm) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+
+  .t-display-md {
+    font-size: var(--display-md);
+    line-height: 1;
+  }
+}
+
+.diff-heading {
+  margin: var(--space-md) 0 var(--space-sm);
+}
+
+.drift-alert {
+  margin: var(--space-sm) 0;
+  color: var(--text-secondary);
+}
+
 @media (max-width: 900px) {
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
   }
 }
