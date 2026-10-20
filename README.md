@@ -84,3 +84,8 @@ git repository documented in `backend/requirements.txt` otherwise.
 ## Roadmap
 
 See [ROADMAP.md](ROADMAP.md) — next: structural diffing, content drift detection, data-leakage channels.
+
+## License
+
+Proprietary — All rights reserved. See [LICENSE](LICENSE) for the full terms.
+For permission requests: x@xscriptor.com
